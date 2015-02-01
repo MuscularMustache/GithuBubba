@@ -1,0 +1,19 @@
+{
+  "name"             : "GithuBubba",
+  "description"      : "Help manage large github pull requests",
+  "version"          : "1.1",
+  "manifest_version" : 2,
+
+  "permissions": [
+    "storage",
+    "*://*/*"
+  ],
+  "content_scripts": [
+    {
+      "run_at"  : "document_end",
+      "matches" : ["https://github.com/*"],
+      "css"     : ["styles.css"],
+      "js"      : ["scripts/jquery.js", "scripts/lodash.js", "scripts/scripts.js"]
+    }
+  ]
+}
