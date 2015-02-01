@@ -1,3 +1,7 @@
 .js-selectable-text {
   cursor: pointer;
 }
+
+.closed {
+  display: none;
+}
