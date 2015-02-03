@@ -4,17 +4,22 @@
   var INJECT_BUTTON_TRY_INTERVAL = 500;
   var injectCounter = 0;
 
-  (function injectButton() {
+  function injectButtons() {
     setTimeout(function() {
       var $commitFiles = $('.actions .show-file-notes');
+
+      if ($('.minibutton.hide-add-content').length) {
+        return;
+      }
+
       if (!$commitFiles.length && injectCounter <= INJECT_BUTTON_TRY_TIMES) {
         injectCounter++;
-        injectButton();
+        injectButtons();
       } else {
         $commitFiles.after('<button class="minibutton hide-add-content">Toggle +/-</button><button class="minibutton collapsable">Hide Diff</button><button class="minibutton hide-deletion">Hide Deletion</button>');
       }
     }, INJECT_BUTTON_TRY_INTERVAL);
-  })();
+  }
 
   function toggleCollapse() {
     var $button      = $(this);
@@ -89,5 +94,15 @@
   .on('click', '.minibutton.collapsable', toggleCollapse)
   .on('click', '.minibutton.hide-add-content', toggleAddDeleteSymbol)
   .on('click', '.minibutton.hide-deletion', toggleDeletion);
+
+  // inject buttons on file change tab button click
+  $('body').on('click', '[data-container-id="files_bucket"]', function() {
+    injectButtons();
+  });
+
+  // inject buttons on page load
+  if ($('.actions .show-file-notes').length) {
+    injectButtons();
+  }
 
 })();
