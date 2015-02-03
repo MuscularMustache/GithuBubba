@@ -1,36 +1,93 @@
-if (typeof String.prototype.startsWith != 'function') {
-  String.prototype.startsWith = function (str){
-    return this.indexOf(str) == 0;
-  };
-}
+(function() {
 
-$('.actions .show-file-notes').after('<button class="minibutton collapsable">Hide Diff</button>');
-$('.actions .show-file-notes').after('<button class="minibutton hide-add-content">Toggle +</button>');
+  var INJECT_BUTTON_TRY_TIMES = 10;
+  var INJECT_BUTTON_TRY_INTERVAL = 500;
+  var injectCounter = 0;
 
-$('body').on('click', '.minibutton.collapsable', function(){
-  var $self = $(this);
-  var diffContent = $self.parents('.js-details-container').find('.highlight.blob-wrapper');
-  if (diffContent.hasClass('closed')) {
-    diffContent.removeClass('closed');
-    $self.text('Hide Diff');
-  } else {
-    diffContent.addClass('closed');
-    $self.text('Show Diff');
-  }
-});
+  (function injectButton() {
+    setTimeout(function() {
+      var $commitFiles = $('.actions .show-file-notes');
+      if (!$commitFiles.length && injectCounter <= INJECT_BUTTON_TRY_TIMES) {
+        injectCounter++;
+        injectButton();
+      } else {
+        $commitFiles.after('<button class="minibutton hide-add-content">Toggle +/-</button><button class="minibutton collapsable">Hide Diff</button><button class="minibutton hide-deletion">Hide Deletion</button>');
+      }
+    }, INJECT_BUTTON_TRY_INTERVAL);
+  })();
 
-$('body').on('click', '.minibutton.hide-add-content', function(){
-  var button = $(this);
-  var addContent = button.parents('.js-details-container').find('.highlight.blob-wrapper .blob-code.blob-code-addition');
+  function toggleCollapse() {
+    var $button      = $(this);
+    var $diffContent = $button.parents('.js-details-container').find('.highlight.blob-wrapper');
 
-  addContent.each(function(){
-    var $self = $(this); // each code addition line
-    var origText = $self.text();
-    if (origText.startsWith('+')) {
-      $self.text($self.text().substring(1));
+    if ($diffContent.hasClass('closed')) {
+      $diffContent.removeClass('closed');
+      $button.text('Hide Diff');
     } else {
-      $self.text('+' + origText);
+      $diffContent.addClass('closed');
+      $button.text('Show Diff');
     }
-  });
+  }
 
-});
+  function toggleAddDeleteSymbol() {
+    var $button   = $(this);
+    var $lineDiff = $button.parents('.js-details-container').find('.blob-code-addition, .blob-code-deletion');
+
+    $lineDiff.each(function() {
+      var $line    = $(this);
+      var lineHtml = $line.html();
+
+      if ($line.is('.blob-code-addition')) {
+        if (/Add line comment"><\/b>\+/.test(lineHtml)) {
+          $line.html(lineHtml.replace('"Add line comment"></b>+', '"Add line comment"></b>'));
+        } else {
+          $line.html(lineHtml.replace('"Add line comment"></b>', '"Add line comment"></b>+'));
+        }
+      } else {
+        if (/Add line comment"><\/b>\-/.test(lineHtml)) {
+          $line.html(lineHtml.replace('"Add line comment"></b>-', '"Add line comment"></b>'));
+        } else {
+          $line.html(lineHtml.replace('"Add line comment"></b>', '"Add line comment"></b>-'));
+        }
+      }
+    });
+  }
+
+  function toggleDeletion() {
+    var $button      = $(this);
+    var $parent      = $button.parents('.js-details-container');
+    var $codeDeleted = $parent.find('.blob-code-deletion');
+    var $codeAdded   = $parent.find('.blob-code-addition');
+    var $lineDeleted = $codeDeleted.parent();
+
+    $lineDeleted.toggleClass('closed');
+
+    if ($lineDeleted.is('.closed')) {
+      $button.text('Show Deletion');
+      $codeAdded.each(function() {
+        var $line    = $(this);
+        var lineHtml = $line.html();
+
+        if (/Add line comment"><\/b>\+/.test(lineHtml)) {
+          $line.html(lineHtml.replace('"Add line comment"></b>+', '"Add line comment"></b>'));
+        }
+      });
+    } else {
+      $button.text('Hide Deletion');
+      $codeAdded.each(function() {
+        var $line    = $(this);
+        var lineHtml = $line.html();
+
+        if (/Add line comment"><\/b>/.test(lineHtml)) {
+          $line.html(lineHtml.replace('"Add line comment"></b>', '"Add line comment"></b>+'));
+        }
+      });
+    }
+  }
+
+  $('body')
+  .on('click', '.minibutton.collapsable', toggleCollapse)
+  .on('click', '.minibutton.hide-add-content', toggleAddDeleteSymbol)
+  .on('click', '.minibutton.hide-deletion', toggleDeletion);
+
+})();
