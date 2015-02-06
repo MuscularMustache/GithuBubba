@@ -1,3 +1,14 @@
 .closed {
   display: none;
 }
+
+.file.fixed-file-header {
+  padding-top: 44px;
+}
+
+.file.fixed-file-header .meta {
+  position: fixed;
+  top: 0;
+  width: 918px;
+  z-index: 999;
+}
