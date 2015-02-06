@@ -3,6 +3,8 @@
   var INJECT_BUTTON_TRY_TIMES = 10;
   var INJECT_BUTTON_TRY_INTERVAL = 500;
   var injectCounter = 0;
+  var fileObj = [];
+  var positionFileMap = [];
 
   function injectButtons() {
     setTimeout(function() {
@@ -17,6 +19,9 @@
         injectButtons();
       } else {
         $commitFiles.after('<button class="minibutton hide-add-content">Toggle +/-</button><button class="minibutton collapsable">Hide Diff</button><button class="minibutton hide-deletion">Hide Deletion</button>');
+
+        $(window).trigger('GithuBubbaInjected')
+          .trigger('DomUpdated');
       }
     }, INJECT_BUTTON_TRY_INTERVAL);
   }
@@ -32,6 +37,7 @@
       $diffContent.addClass('closed');
       $button.text('Show Diff');
     }
+    $(window).trigger('DomUpdated');
   }
 
   function toggleAddDeleteSymbol() {
@@ -56,6 +62,8 @@
         }
       }
     });
+
+    $(window).trigger('DomUpdated');
   }
 
   function toggleDeletion() {
@@ -64,6 +72,11 @@
     var $codeDeleted = $parent.find('.blob-code-deletion');
     var $codeAdded   = $parent.find('.blob-code-addition');
     var $lineDeleted = $codeDeleted.parent();
+
+    // if not delted line, do nothing
+    if (!$codeDeleted.length) {
+      return;
+    }
 
     $lineDeleted.toggleClass('closed');
 
@@ -88,6 +101,59 @@
         }
       });
     }
+
+    $(window).trigger('DomUpdated');
+  }
+
+  function updateFileReversePositions() {
+    var pageHeight = document.body.getBoundingClientRect().height;
+    var i = 0;
+
+    // init each page pixel position to -1
+    for (; i < pageHeight; i++) {
+      positionFileMap[i] = -1;
+    }
+
+    $('#files .file').each(function(index, file) {
+      var top    = file.offsetTop + 138;
+      var bottom = top + file.getBoundingClientRect().height;
+      var i      = top;
+
+      // cache file meta jquery obj
+      fileObj[index] = file;
+
+      // cache position file map
+      for (; i < bottom; i++) {
+        positionFileMap[i] = index;
+      }
+    });
+  }
+
+  function setFixedFileHeader(i) {
+    fileObj.forEach(function(file, index) {
+      if (index === i) {
+        file.classList.add('fixed-file-header');
+      } else {
+        file.classList.remove('fixed-file-header');
+      }
+    });
+  }
+
+  function bindfileScrollEvent() {
+    $(window).on('scroll.file', function(e) {
+      if (!(fileObj.length && positionFileMap.length)) {
+        return;
+      }
+      var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+
+      setTimeout(function() {
+        setFixedFileHeader(positionFileMap[scrollTop]);
+      }, 0);
+    });
+  }
+
+  function unbindfileScrollEvent() {
+    $(window).off('scroll.file');
   }
 
   $('body')
@@ -95,8 +161,12 @@
   .on('click', '.minibutton.hide-add-content', toggleAddDeleteSymbol)
   .on('click', '.minibutton.hide-deletion', toggleDeletion);
 
+  //-----------------------------------------------------------------------------
+  // File Toggle Buttons Injecting
+  //-----------------------------------------------------------------------------
+
   // inject buttons on file change tab button click
-  $('body').on('click', '[data-container-id="files_bucket"]', function() {
+  $('body').on('click', '[data-container-id="files_bucket"]', '.details-collapse', function() {
     injectButtons();
   });
 
@@ -104,5 +174,26 @@
   if ($('.actions .show-file-notes').length) {
     injectButtons();
   }
+
+  //-----------------------------------------------------------------------------
+  // File fixed header event binding
+  //-----------------------------------------------------------------------------
+
+  // bind scroll event at begining, be fine without supporting data
+  bindfileScrollEvent();
+
+  // refresh supporting data when dom update, delay a while to wait for page load ready
+  $(window).on('DomUpdated', function() {
+    setTimeout(function() {
+      updateFileReversePositions();
+    }, 1000);
+  });
+
+  $('body').on('click', '.js-add-line-comment, .diff-expander', function() {
+    setTimeout(function() {
+      updateFileReversePositions();
+    }, 1000);
+  });
+
 
 })();

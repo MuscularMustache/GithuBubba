@@ -13,7 +13,7 @@
       "run_at"  : "document_end",
       "matches" : ["https://github.com/*"],
       "css"     : ["styles.css"],
-      "js"      : ["scripts/jquery.js", "scripts/lodash.js", "scripts/scripts.js"]
+      "js"      : ["scripts/jquery.js", "scripts/scripts.js"]
     }
   ]
 }
