@@ -166,7 +166,7 @@
   //-----------------------------------------------------------------------------
 
   // inject buttons on file change tab button click
-  $('body').on('click', '[data-container-id="files_bucket"]', '.details-collapse', function() {
+  $('body').on('click', '[data-container-id="files_bucket"], .details-collapse', function() {
     injectButtons();
   });
 
@@ -189,7 +189,7 @@
     }, 1000);
   });
 
-  $('body').on('click', '.js-add-line-comment, .diff-expander', function() {
+  $('body').on('click', '.js-add-line-comment, .diff-expander, [data-container-id="files_bucket"]', function() {
     setTimeout(function() {
       updateFileReversePositions();
     }, 1000);
