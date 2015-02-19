@@ -8,7 +8,7 @@
 
   function injectButtons() {
     setTimeout(function() {
-      var $commitFiles = $('.actions .show-file-notes');
+      var $commitFiles = $('.file-actions .show-file-notes');
 
       if ($('.minibutton.hide-add-content').length) {
         return;
@@ -171,7 +171,7 @@
   });
 
   // inject buttons on page load
-  if ($('.actions .show-file-notes').length) {
+  if ($('.file-actions .show-file-notes').length) {
     injectButtons();
   }
 
