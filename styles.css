@@ -6,7 +6,7 @@
   padding-top: 44px;
 }
 
-.file.fixed-file-header .meta {
+.file.fixed-file-header .file-header {
   position: fixed;
   top: 0;
   width: 918px;
