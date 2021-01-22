@@ -1,3 +1,6 @@
+# DEPRICATED
+### Everything written in this has been added into github over time
+
 # GithuBubba
 Help manage github pull requests
 
